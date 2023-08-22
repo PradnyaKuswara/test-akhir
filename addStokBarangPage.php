@@ -521,30 +521,30 @@
         document.getElementById("counter").value = counter ? counter : "01";
     });
 
-    function fillBukti() {
-        const jenisTransaksi = document.querySelector('input[name="jenis_transaksi"]:checked').value;
+    // function fillBukti() {
+    //     const jenisTransaksi = document.querySelector('input[name="jenis_transaksi"]:checked').value;
 
-        let counterElement, buktiTransaksi;
+    //     let counterElement, buktiTransaksi;
 
-        if (jenisTransaksi === "MASUK") {
-            counterElement = document.getElementById("counter");
-            buktiTransaksi = "TAMBAH";
-        } else if (jenisTransaksi === "KELUAR") {
-            counterElement = document.getElementById("counter_keluar");
-            buktiTransaksi = "KURANG";
-        }
+    //     if (jenisTransaksi === "MASUK") {
+    //         counterElement = document.getElementById("counter");
+    //         buktiTransaksi = "TAMBAH";
+    //     } else if (jenisTransaksi === "KELUAR") {
+    //         counterElement = document.getElementById("counter_keluar");
+    //         buktiTransaksi = "KURANG";
+    //     }
 
-        const counter = parseInt(counterElement.value);
-        const formattedCounter = counter.toString().padStart(2, "0");
+    //     const counter = parseInt(counterElement.value);
+    //     const formattedCounter = counter.toString().padStart(2, "0");
 
-        document.getElementById("bukti_transaksi").value = buktiTransaksi + formattedCounter;
+    //     document.getElementById("bukti_transaksi").value = buktiTransaksi + formattedCounter;
 
-        // Increment the counter
-        counterElement.value = (counter + 1).toString().padStart(2, "0");
+    //     // Increment the counter
+    //     counterElement.value = (counter + 1).toString().padStart(2, "0");
 
-        // Save the counter value in a cookie
-        setCookie("counter", counterElement.value, 365);
-    }
+    //     // Save the counter value in a cookie
+    //     setCookie("counter", counterElement.value, 365);
+    // }
 
     // Function to set a cookie
     function setCookie(name, value, days) {

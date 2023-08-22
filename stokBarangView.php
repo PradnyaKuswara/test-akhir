@@ -14,7 +14,7 @@
         <button type="submit">Search</button>
     </form><br><br>
 </div>
-    <a href="addStokBarangPage.php" class="button-secondary" onclick="return confirm('Are you sure you want to add stock?')">Tambah Stok</a>
+    <a href="addStokBarangPage.php" class="button-secondary" onclick="return confirm('Are you sure you want to add stock?')">Kelola Stok</a>
     <a href="transaksiHistoriView.php" class="button-secondary" onclick="return confirm('Are you sure you want to go transaction history?')">Histori Stok</a>
     <a href="masterBarangView.php" class="button-secondary" onclick="return confirm('Are you sure want to add master stuff?')">Master Barang</a>
     <a href="masterLokasiView.php" class="button-secondary" onclick="return confirm('Are you sure want to add master location?')">Master Lokasi</a>

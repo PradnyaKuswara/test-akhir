@@ -206,29 +206,6 @@
             $status = true;
         }
 
-        // //validasi transaksi keluar 
-        // $status = false;
-        // $kodeBarang = $_POST['kode_barang'];
-        // $lokasi = $_POST['lokasi'];
-
-        // $query = "SELECT saldo_barang, tgl_masuk FROM stok_barang WHERE kode_barang='$kodeBarang' AND lokasi='$lokasi' ORDER BY tgl_masuk DESC LIMIT 1";
-        // $result = mysqli_query($con, $query);
-        // $row = mysqli_fetch_assoc($result);
-
-        // $saldoTerakhir = $row['saldo_barang'];
-        // $tglMasukTerakhir = strtotime($row['tgl_masuk']);
-
-        // // Validasi tanggal transaksi baru
-        // $tglTransaksiBaru = strtotime($_POST['tgl_masuk']);
-        // if ($tglTransaksiBaru < $tglMasukTerakhir) {
-        //     echo '<script>
-        //             alert("Tambah/Kurang Stok Barang Gagal: Tanggal transaksi lebih kecil dari tanggal masuk terakhir.");
-        //             window.location = "addStokBarangPage.php";
-        //         </script>';
-        // } else {
-        //     $status = true;
-        // }
-
         if ($status === true) {
             // Validasi saldo barang
             $jenisTransaksi = $_POST['jenis_transaksi'];
@@ -247,7 +224,7 @@
 
                     $number = str_pad($lastInsertedId, 2, '0', STR_PAD_LEFT);;
                     $bukti_code = $data['bukti_transaksi'] . $number;
-                    $query_update = mysqli_query($con,"UPDATE stok_barang SET bukti_transaksi='$bukti_code'WHERE id_stok='$lastInsertedId'") or die(mysqli_error($con));
+                    $query_update = mysqli_query($con,"UPDATE stok_barang SET bukti_transaksi='$bukti_code'WHERE id_stok='$lastInsertedId'ORDER BY id_stok ASC") or die(mysqli_error($con));
 
                     date_default_timezone_set('Asia/Jakarta');
                     $currentDate = date('Y-m-d');
@@ -270,74 +247,77 @@
                         </script>';
                 }
                 $stmt->close();
-            } elseif ($jenisTransaksi === 'KURANG') {
-                // Jika jenis transaksi adalah kurang, validasi saldo
-                if ($saldoTerakhir >= $jumlahTransaksi) {
-                    // Lanjutkan dengan proses kurang stok
-                    $saldoBarangBaru = $saldoTerakhir - $jumlahTransaksi;
-                    $sql = "INSERT INTO stok_barang (jenis_transaksi, bukti_transaksi, lokasi, kode_barang, nama_barang, tgl_masuk, saldo_barang)
-                            VALUES ($jenisTransaksi, $buktiTransaksi, $lokasi, $kodeBarang, $namaBarang, $tglMasuk, $saldoBarangBaru)";
-                    $stmt2 = $con->prepare($sql);
-                    $stmt2->bind_param("sssssss", $jenisTransaksi, $buktiTransaksi, $lokasi, $kodeBarang, $namaBarang, $tglMasuk, $saldoBarangBaru);
+            } elseif ($jenisTransaksi === 'KELUAR') {
+                //check database row empty
+                $query_select = mysqli_query($con,"SELECT * from stok_barang WHERE kode_barang='$kodeBarang' AND lokasi='$lokasi'") or die(mysqli_error($con));
+                if(!mysqli_num_rows($query_select)){
+                    echo'<script>
+                    alert("Stok barang '.$kode_barang.' di lokasi '.$lokasi.' tidak ada, silahkan buat transkasi masuk terlebih dahulu");
+                    window.location = "stokBarangView.php";
+                    </script>
+                    ';
+                }else{
+                     //check count row
+                    $query_count = mysqli_query($con,"SELECT COUNT('id_stok') as jumlah_data FROM stok_barang") or die(mysqli_error($con));
+                    $data_count = mysqli_fetch_assoc($query_count);
+                    $count = 0;
+                    $saldo = 0;
 
-                    if ($stmt2->execute()) {
-                        $lastInsertedId = $stmt2->insert_id;
-                        echo '<script>
-                        alert("Kurang Stok Barang dan Transaksi Histori Sukses");
-                        window.location = "stokBarangView.php";
-                        </script>';
+                    $data = array();
+                    while($row = mysqli_fetch_assoc($query_select)){
+                        //calculating check if all saldo is 0
+                        if($row['saldo_barang'] == 0){
+                            $count++;
+                        }else{
+                            $saldo+= $row['saldo_barang'];
+                        }
+                        //insert result query to array
+                        array_push($data,$row);
                     }
-                } else {
-                    echo '<script>
-                            alert("Kurang Stok Barang Gagal: Saldo barang tidak mencukupi.");
-                            window.location = "addStokBarangPage.php";
-                        </script>';
+                    //check all saldo is 0 and  check sum saldo can use to substract
+                    if($count == $data_count['jumlah_data']){
+                        echo'<script>
+                        alert("Saldo barang '.$kode_barang.' di lokasi '.$lokasi.' semua kosong, silahkan buat transkasi masuk terlebih dahulu");
+                        window.location = "stokBarangView.php";
+                        </script>
+                        ';
+                    }else if($saldo < $saldoBarang){
+                        echo'<script>
+                        alert("Saldo barang '.$kode_barang.' di lokasi '.$lokasi.' tidak mencukupi permintaan untuk transaksi keluar, silahkan buat transkasi masuk terlebih dahulu");
+                        window.location = "stokBarangView.php";
+                        </script>
+                        ';
+                    }else{
+                        $temp_saldo;
+
+                        foreach($data as $item){
+                            $id = $item['id_stok'];
+                            if($item['saldo_barang'] != 0){
+                                $temp_saldo = $item['saldo_barang'] - $saldoBarang;
+                                if($temp_saldo < 0){
+                                    $query_update = mysqli_query($con,"UPDATE stok_barang SET saldo_barang='0' WHERE id_stok='$id'") or die(mysqli_error($con));
+                                    $saldoBarang = abs($temp_saldo);
+                                }else{
+                                    $query_update = mysqli_query($con,"UPDATE stok_barang SET saldo_barang='$temp_saldo' WHERE id_stok='$id'") or die(mysqli_error($con));
+                                    break;
+                                }
+                            }
+                        }
+                        echo'
+                        <script>
+                        alert("Berhasil");
+                        window.location = "stokBarangView.php";
+                    </script>
+                        ';
+                        //code insert to transaksi history......
+                    }
                 }
-                $stmt2->close();
             }
         }
-
-
-        // Masuk ke Database
-        // if ($status === true) {
-        //     // SQL query to insert data into stok_barang table using prepared statement
-        //     $sql = "INSERT INTO stok_barang (jenis_transaksi, bukti_transaksi, lokasi, kode_barang, nama_barang, tgl_masuk, saldo_barang)
-        //             VALUES ('$jenisTransaksi', '$buktiTransaksi', '$lokasi', '$kodeBarang', '$namaBarang', '$tglMasuk', '$saldoBarang')";
-            
-        //     $stmt = $con->prepare($sql);
-        // //    $stmt->bind_param("sssssss", $jenisTransaksi, $buktiTransaksi, $lokasi, $kodeBarang, $namaBarang, $tglMasuk, $saldoBarang);
-    
-        //     if ($stmt->execute()) {
-        //         $lastInsertedId = $stmt->insert_id;
-    
-        //         // ... (lanjutkan dengan operasi untuk transaksi_histori)
-        //         date_default_timezone_set('Asia/Jakarta');
-        //         $currentDate = date('Y-m-d');
-        //         $currentTime = date('H:i:s');
-            
-        //         $currentDate = $con->real_escape_string($currentDate);
-        //         $currentTime = $con->real_escape_string($currentTime);
-            
-        //         $sql2 = "INSERT INTO transaksi_histori (id_stok, tgl_transaksi_histori, jam_masuk) 
-        //                 VALUES ('$lastInsertedId', '$currentDate', '$currentTime')";
-    
-        // if ($con->query($sql2) === TRUE) {
-        //         echo '<script>
-        //                 alert("Tambah Stok Barang dan Transaksi Histori Sukses");
-        //                 window.location = "stokBarangView.php";
-        //             </script>';
-        //     } else {
-        //         echo '<script>
-        //                 alert("Tambah Stok Barang Gagal");
-        //             </script>';
-        //     }
-        // }
-        //     $stmt->close();
-        // }
     }
 ?>
 
-    <h1 style="margin-right:20px;">Tambah Transaksi Stok</h1>
+    <h1 style="margin-right:20px;">Kelola Transaksi Stok</h1>
     <div class="form-container">
         <h1>
             <center><span id="clock"></span></center>

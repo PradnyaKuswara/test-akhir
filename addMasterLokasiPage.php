@@ -64,7 +64,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $db_host = "localhost";
     $db_user = "root";
     $db_pass = "";
-    $db_name = "test_akhir";
+    $db_name = "php_akhir";
 
     // Create connection
     $conn = new mysqli($db_host, $db_user, $db_pass, $db_name);

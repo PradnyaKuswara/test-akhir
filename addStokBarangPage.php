@@ -108,7 +108,7 @@
     $host = "localhost";
     $user = "root";
     $pass = "";
-    $name = "test_akhir";
+    $name = "php_akhir";
 
     $con = mysqli_connect($host,$user,$pass,$name);
 
@@ -177,7 +177,7 @@
         }
         $saldo_barang = test_input($_POST['saldo_barang']);
 
-        //validasi transaksi masuk jika tglmasuk < tglmasukterakhir
+        //validasi transaksi masuk jika tglmasuk < tglmasukterakhir//
         // Ambil data saldo dan tanggal masuk terakhir dari database
         $status = false;
         $kodeBarang = $_POST['kode_barang'];
@@ -214,8 +214,9 @@
             if ($jenisTransaksi === 'MASUK') {
                 $buktiTransaksi = "TAMBAH";
                 // Jika jenis transaksi adalah tambah, lanjutkan dengan proses
-                $sql = mysqli_query($con,"INSERT INTO stok_barang (jenis_transaksi, bukti_transaksi, lokasi, kode_barang, nama_barang, tgl_masuk, saldo_barang)
-                        VALUES ('$jenisTransaksi', '$buktiTransaksi', '$lokasi', '$kodeBarang', '$namaBarang', '$tglMasuk', '$saldoBarang')") or die (mysqli_error($con));
+                $sql = mysqli_query($con,"INSERT INTO stok_barang (lokasi, kode_barang, nama_barang, tgl_masuk, saldo_barang)
+                        VALUES ( '$lokasi', '$kodeBarang', '$namaBarang', '$tglMasuk', '$saldoBarang')") or die (mysqli_error($con));
+
 
                 if ($sql) {
                     $query_select = mysqli_query($con,"SELECT * from stok_barang ORDER BY id_stok DESC LIMIT 1");
@@ -224,7 +225,7 @@
 
                     $number = str_pad($lastInsertedId, 2, '0', STR_PAD_LEFT);;
                     $bukti_code = $data['bukti_transaksi'] . $number;
-                    $query_update = mysqli_query($con,"UPDATE stok_barang SET bukti_transaksi='$bukti_code'WHERE id_stok='$lastInsertedId'ORDER BY id_stok ASC") or die(mysqli_error($con));
+                    $query_update = mysqli_query($con,"UPDATE transaksi_histori SET bukti_transaksi='$bukti_code' WHERE id_stok='$lastInsertedId'ORDER BY id_stok ASC") or die(mysqli_error($con));
 
                     date_default_timezone_set('Asia/Jakarta');
                     $currentDate = date('Y-m-d');
@@ -233,8 +234,8 @@
                     $currentDate = $con->real_escape_string($currentDate);
                     $currentTime = $con->real_escape_string($currentTime);
                 
-                    $sql2 = mysqli_query($con,"INSERT INTO transaksi_histori (id_stok, tgl_transaksi_histori, jam_masuk) 
-                            VALUES ('$lastInsertedId', '$currentDate', '$currentTime')") or die(mysqli_error($con));
+                    $sql2 = mysqli_query($con,"INSERT INTO transaksi_histori (id_stok, jenis_transaksi, bukti_transaksi, tgl_transaksi_histori, jam_masuk) 
+                            VALUES ( '$lastInsertedId', '$jenisTransaksi','$buktiTransaksi', '$currentDate', '$currentTime')") or die(mysqli_error($con));
 
                     echo '<script>
                         alert("Transaksi Histori Sukses");
@@ -309,7 +310,39 @@
                         window.location = "stokBarangView.php";
                     </script>
                         ';
-                        //code insert to transaksi history......
+                        //code insert to transaksi history......masih coba
+
+                            try {
+                                date_default_timezone_set('Asia/Jakarta');
+                                $tglTransaksiHistori = date('Y-m-d'); // Tanggal transaksi histori (sesuaikan dengan format yang dibutuhkan)
+                                $jamHistori = date('H:i:s'); // Jam transaksi histori (sesuaikan dengan format yang dibutuhkan)
+                            
+                                foreach ($data as $item) {
+                                    $idStok = $item['id_stok'];
+                            
+                                    // Insert ke tabel transaksi_histori
+                                    $insertQuery = "INSERT INTO transaksi_histori (id_stok, jenis_transaksi, bukti_transaksi, tgl_transaksi_histori, jam_masuk) 
+                                                    VALUES ('$idStok', '$jenisTransaksi', '$buktiTransaksi', '$tglTransaksiHistori', '$jamHistori')";
+                                    $insertResult = mysqli_query($con, $insertQuery);
+                            
+                                    if (!$insertResult) {
+                                        throw new Exception(mysqli_error($con)); // Throw an exception with the MySQL error message
+                                    }
+                                }
+                            
+                                echo '
+                                <script>
+                                    alert("Berhasil");
+                                    window.location = "stokBarangView.php";
+                                </script>';
+                            } catch (Exception $e) {
+                                echo '
+                                <script>
+                                    alert("Gagal memasukkan data ke dalam transaksi history: ' . $e->getMessage() . '");
+                                    window.location = "stokBarangView.php";
+                                </script>';
+                            }
+                        
                     }
                 }
             }
@@ -317,7 +350,7 @@
     }
 ?>
 
-    <h1 style="margin-right:20px;">Kelola Transaksi Stok</h1>
+    <h1 style="margin-right:20px;">Tambah Transaksi Stok</h1>
     <div class="form-container">
         <h1>
             <center><span id="clock"></span></center>
@@ -520,31 +553,6 @@
         const counter = getCookie("counter");
         document.getElementById("counter").value = counter ? counter : "01";
     });
-
-    // function fillBukti() {
-    //     const jenisTransaksi = document.querySelector('input[name="jenis_transaksi"]:checked').value;
-
-    //     let counterElement, buktiTransaksi;
-
-    //     if (jenisTransaksi === "MASUK") {
-    //         counterElement = document.getElementById("counter");
-    //         buktiTransaksi = "TAMBAH";
-    //     } else if (jenisTransaksi === "KELUAR") {
-    //         counterElement = document.getElementById("counter_keluar");
-    //         buktiTransaksi = "KURANG";
-    //     }
-
-    //     const counter = parseInt(counterElement.value);
-    //     const formattedCounter = counter.toString().padStart(2, "0");
-
-    //     document.getElementById("bukti_transaksi").value = buktiTransaksi + formattedCounter;
-
-    //     // Increment the counter
-    //     counterElement.value = (counter + 1).toString().padStart(2, "0");
-
-    //     // Save the counter value in a cookie
-    //     setCookie("counter", counterElement.value, 365);
-    // }
 
     // Function to set a cookie
     function setCookie(name, value, days) {

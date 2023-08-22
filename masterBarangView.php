@@ -41,12 +41,13 @@
             <th>No</th>
             <th>Kode Barang</th>
             <th>Nama Barang</th>
+            <th>Aksi</th>
         </tr>
         <?php
             $servername = "localhost";
             $username = "root";
             $password = "";
-            $dbname = "test_akhir";
+            $dbname = "php_akhir";
 
             $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -54,7 +55,7 @@
                 die("Connection failed: " . $conn->connect_error);
             }
 
-            $query = "SELECT kode_barang, nama_barang FROM master_barang";
+            $query = "SELECT id_barang, kode_barang, nama_barang FROM master_barang";
             $result = mysqli_query($conn, $query);
            
                 // Display data in HTML table
@@ -64,6 +65,11 @@
                     echo '<td style="text-align: right;">' . $no . '</td>';
                     echo "<td>" . strtoupper(trim($row['kode_barang'])) . "</td>";
                     echo "<td>" . strtoupper(trim($row['nama_barang'])) . "</td>";
+
+                    echo '<td>
+                        <a href="updateMasterBarangPage.php?id_barang=' . $row['id_barang'] . '" class="btn btn-primary" onclick="return confirmEdit();">Edit</a>
+                        <a href="deleteMasterBarang.php?id_barang=' . $row['id_barang'] . '" class="btn btn-danger" onclick="return confirmDelete();">Delete</a>
+                    </td>';
                     echo "</tr>";
                     $no++;
             }
@@ -73,3 +79,13 @@
     </table>
 </body>
 </html>
+
+<script>
+    function confirmEdit() {
+        return confirm("Are you sure you want to edit this master?");
+    }
+
+    function confirmDelete() {
+        return confirm("Are you sure you want to delete this master?");
+    }
+</script>

@@ -54,7 +54,7 @@
             $servername = "localhost";
             $username = "root";
             $password = "";
-            $dbname = "test_akhir";
+            $dbname = "php_akhir";
 
             $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -74,13 +74,13 @@
             $query = "SELECT
                         th.tgl_transaksi_histori,
                         th.jam_masuk,
-                        sb.bukti_transaksi,
+                        th.bukti_transaksi,
+                        th.jenis_transaksi,
                         sb.lokasi,
                         sb.kode_barang,
                         sb.nama_barang,
                         sb.tgl_masuk,
-                        sb.saldo_barang,
-                        sb.jenis_transaksi
+                        sb.saldo_barang
                     FROM
                         stok_barang AS sb
                     LEFT JOIN

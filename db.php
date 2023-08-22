@@ -2,7 +2,7 @@
     $host = "localhost";
     $user = "root";
     $pass = "";
-    $name = "test_akhir";
+    $name = "php_akhir";
     
     $con = mysqli_connect($host,$user,$pass,$name);
 

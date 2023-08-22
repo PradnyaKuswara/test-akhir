@@ -4,7 +4,7 @@
 <link rel="stylesheet" type="text/css" href="style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <title>Master-Barang</title>
+    <title>Master Lokasi</title>
     <style>
         table {
             border-collapse: collapse;
@@ -43,7 +43,7 @@
             $servername = "localhost";
             $username = "root";
             $password = "";
-            $dbname = "test_akhir";
+            $dbname = "php_akhir";
 
             $conn = new mysqli($servername, $username, $password, $dbname);
 
@@ -51,7 +51,7 @@
                 die("Connection failed: " . $conn->connect_error);
             }
 
-            $query = "SELECT lokasi FROM master_lokasi";
+            $query = "SELECT id_lokasi, lokasi FROM master_lokasi";
             $result = mysqli_query($conn, $query);
            
                 // Display data in HTML table
@@ -60,11 +60,11 @@
                     echo "<tr>";
                     echo '<td style="text-align: right;">' . $no . '</td>';
                     echo "<td>" . strtoupper(trim($row['lokasi'])) . "</td>";
-                    echo
-                    "<td
-                        class='btn btn-primary mr-2' id='editButton'. onclick='return confirmEdit();'> Edit</a>
-                        <class='btn btn-danger'. onclick='return confirmDelete();'>Delete</a>   
-                    </td>";
+
+                    echo '<td>
+                        <a href="updateMasterLokasiPage.php?id_lokasi=' . $row['id_lokasi'] . '" class="btn btn-primary" onclick="return confirmEdit();">Edit</a>
+                        <a href="deleteMasterLokasiProcess  .php?id_lokasi=' . $row['id_lokasi'] . '" class="btn btn-danger" onclick="return confirmDelete();">Delete</a>
+                    </td>';
 
                     echo "</tr>";
                     $no++;
